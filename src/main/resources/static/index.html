@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Shop Game Ninja School</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS Phân trang cho trang chủ */
+        .pagination { display: flex; justify-content: center; gap: 8px; margin: 30px 0; }
+        .page-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        .page-btn:hover { background: #f1f1f1; }
+        .page-btn.active { background: #3498db; color: white; border-color: #3498db; }
+
+        /* CSS thông báo không tìm thấy */
+        .no-result { grid-column: 1 / -1; text-align: center; padding: 40px; color: #777; font-size: 18px; }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px 0;
+        }
+
+        .top-bar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #9ca3af;
+            transition: 0.3s;
+        }
+
+        .social-icons a:hover {
+            color: #6b7280;
+        }
+
+        .social-icons svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .hotline {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .hotline a {
+            color: #9ca3af;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar với Social Icons và Hotline -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="social-icons">
+                <a href="https://www.facebook.com/baonguyen.nguyenba" target="_blank" title="Facebook">
+                    <svg fill="#9ca3af" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                <a href="#" target="_blank" title="YouTube">
+                    <svg fill="#9ca3af" viewBox="0 0 24 24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="hotline">Hotline: <a href="https://zalo.me/0377709859">0377709859</a> (8h-20h)</div>
+        </div>
+    </div>
+
+<header class="main-header">
+    <div class="container header-content">
+        <a href="index.html" class="logo">T1NSOSHOP</a>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.html">TRANG CHỦ</a></li>
+                <li id="authLink"><a href="login.html">ĐĂNG NHẬP</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <section class="category-header">
+        <h1>NICK NINJA VIP</h1>
+        <p>Hệ thống bán nick tự động uy tín, giá rẻ</p>
+    </section>
+
+    <section class="search-filter">
+        <!-- Hàng 1: Tìm kiếm, Mã số, Khoảng giá -->
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Tìm kiếm</label>
+                <input type="text" id="filterKeyword" placeholder="Từ khóa">
+            </div>
+            <div class="filter-group">
+                <label>Mã số</label>
+                <input type="text" id="filterMsCode" placeholder="Mã số">
+            </div>
+            <div class="filter-group">
+                <label>Khoảng giá</label>
+                <select id="filterPriceRange">
+                    <option value="">-- Không chọn --</option>
+                    <option value="under200k">Dưới 200k</option>
+                    <option value="200k-500k">200k - 500k</option>
+                    <option value="500k-1m">500k - 1 triệu</option>
+                    <option value="over1m">Trên 1 triệu</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Hàng 2: Server, Class, Level -->
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Server</label>
+                <select id="filterServer">
+                    <option value="">-- Không chọn --</option>
+                    <option value="1">Server 1</option>
+                    <option value="2">Server 2</option>
+                    <option value="3">Server 3</option>
+                    <option value="4">Server 4</option>
+                    <option value="5">Server 5</option>
+                    <option value="6">Server 6</option>
+                    <option value="7">Server 7</option>
+                    <option value="8">Server 8</option>
+                    <option value="2+3">Server 2+3</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Class</label>
+                <select id="filterClass">
+                    <option value="">-- Không chọn --</option>
+                    <option value="Quạt">Quạt</option>
+                    <option value="Kiếm">Kiếm</option>
+                    <option value="Tiêu">Tiêu</option>
+                    <option value="Cung">Cung</option>
+                    <option value="Đao">Đao</option>
+                    <option value="Kunai">Kunai</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Level</label>
+                <input type="number" id="filterLevel" placeholder="Level">
+            </div>
+        </div>
+        
+        <!-- Hàng 3: Sắp xếp, TTGT, Nút Tìm kiếm, Nút Tất cả -->
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Sắp xếp</label>
+                <select id="sortBy">
+                    <option value="">-- Không chọn --</option>
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                    <option value="price-asc">Giá: Thấp → Cao</option>
+                    <option value="price-desc">Giá: Cao → Thấp</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>TTGT</label>
+                <select id="filterTtgt">
+                    <option value="">-- Không chọn --</option>
+                    <option value="Không">Không</option>
+                    <option value="Có">Có</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="btn-search" onclick="applyFilter()">Tìm kiếm</button>
+                <button class="btn-reset" onclick="resetFilter()">Tất cả</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="product-grid">
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+</main>
+
+<script>
+    let allProducts = [];      // Danh sách gốc từ API
+    let filteredProducts = []; // Danh sách sau khi lọc
+    let currentPage = 1;
+    const itemsPerPage = 8;    // Số nick hiển thị mỗi trang
+
+    async function loadData() {
+        try {
+            const res = await fetch('/api/products');
+            allProducts = await res.json();
+            // Lọc bỏ sản phẩm đã bán (phòng trường hợp API trả về)
+            allProducts = allProducts.filter(p => !p.sold);
+            filteredProducts = allProducts; // Ban đầu chưa lọc gì cả
+            displayProducts();
+        } catch (err) {
+            console.error("Lỗi tải data:", err);
+        }
+    }
+
+    function displayProducts() {
+        const grid = document.querySelector('.product-grid');
+        grid.innerHTML = '';
+
+        if (filteredProducts.length === 0) {
+            grid.innerHTML = '<div class="no-result">Không tìm thấy tài khoản nào phù hợp!</div>';
+            document.getElementById('pagination').innerHTML = '';
+            return;
+        }
+
+        // Logic cắt trang
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const currentItems = filteredProducts.slice(start, end);
+
+        currentItems.forEach(p => {
+            // Parse images - get first image as logo
+            let firstImage = '';
+            try {
+                if (p.imgData) {
+                    const images = JSON.parse(p.imgData);
+                    if (Array.isArray(images) && images.length > 0) {
+                        firstImage = images[0];
+                    } else if (typeof images === 'string') {
+                        firstImage = images;
+                    }
+                }
+            } catch (e) {
+                // Single image string
+                firstImage = p.imgData || '';
+            }
+            
+            grid.innerHTML += `
+            <div class="product-card">
+                <div class="card-thumb">
+                    <img src="${firstImage}" alt="${p.msCode || 'Product'}">
+                    <span class="ms-tag">MS: ${p.msCode || 'N/A'}</span>
+                </div>
+                <div class="card-body">
+                    <div class="product-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Server:</span>
+                            <span class="detail-value">${p.server || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Class:</span>
+                            <span class="detail-value">${p.className || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Level:</span>
+                            <span class="detail-value">${p.level || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">TTGT:</span>
+                            <span class="detail-value">${p.ttgt || 'Không'}</span>
+                        </div>
+                    </div>
+                    <div class="product-footer">
+                        <div class="price-box">${Number(p.price || 0).toLocaleString()}₫</div>
+                        <button class="btn-detail" onclick="window.location.href='product-detail.html?id=${p.id}'">Chi tiết</button>
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
+        const container = document.getElementById('pagination');
+        container.innerHTML = '';
+
+        if (pageCount <= 1) return; // Nếu chỉ có 1 trang thì không hiện nút bấm
+
+        for (let i = 1; i <= pageCount; i++) {
+            container.innerHTML += `
+                <button class="page-btn ${i === currentPage ? 'active' : ''}"
+                        onclick="changePage(${i})">${i}</button>`;
+        }
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        displayProducts();
+        // Cuộn nhẹ lên đầu danh sách sản phẩm
+        document.querySelector('.product-grid').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function applyFilter() {
+        const keyword = document.getElementById('filterKeyword').value.trim().toLowerCase();
+        const msCode = document.getElementById('filterMsCode').value.trim().toLowerCase();
+        const priceRange = document.getElementById('filterPriceRange').value;
+        const sv = document.getElementById('filterServer').value;
+        const cl = document.getElementById('filterClass').value;
+        const level = document.getElementById('filterLevel').value.trim();
+        const ttgt = document.getElementById('filterTtgt').value;
+        const sortBy = document.getElementById('sortBy').value;
+
+        // Lọc sản phẩm
+        filteredProducts = allProducts.filter(p => {
+            // Lọc theo từ khóa (tìm trong title)
+            const checkKeyword = keyword === "" || (p.title && p.title.toLowerCase().includes(keyword));
+            
+            // Lọc theo mã số MS
+            const checkMs = msCode === "" || (p.msCode && p.msCode.toLowerCase().includes(msCode));
+            
+            // Lọc theo khoảng giá
+            let checkPrice = true;
+            if (priceRange === "under200k") {
+                checkPrice = p.price < 200000;
+            } else if (priceRange === "200k-500k") {
+                checkPrice = p.price >= 200000 && p.price < 500000;
+            } else if (priceRange === "500k-1m") {
+                checkPrice = p.price >= 500000 && p.price <= 1000000;
+            } else if (priceRange === "over1m") {
+                checkPrice = p.price > 1000000;
+            }
+            
+            // Lọc theo Server
+            const checkSv = sv === "" || p.server == sv;
+            
+            // Lọc theo Class
+            const checkCl = cl === "" || p.className == cl;
+            
+            // Lọc theo Level
+            const checkLevel = level === "" || p.level == parseInt(level);
+            
+            // Lọc theo TTGT
+            const checkTtgt = ttgt === "" || p.ttgt == ttgt;
+            
+            // Lọc bỏ sản phẩm đã bán
+            const checkSold = !p.sold;
+            
+            return checkKeyword && checkMs && checkPrice && checkSv && checkCl && checkLevel && checkTtgt && checkSold;
+        });
+
+        // Sắp xếp
+        if (sortBy === "newest") {
+            filteredProducts.sort((a, b) => (b.id || 0) - (a.id || 0)); // ID lớn hơn = mới hơn
+        } else if (sortBy === "oldest") {
+            filteredProducts.sort((a, b) => (a.id || 0) - (b.id || 0)); // ID nhỏ hơn = cũ hơn
+        } else if (sortBy === "price-asc") {
+            filteredProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
+        } else if (sortBy === "price-desc") {
+            filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
+        }
+
+        currentPage = 1; // Reset về trang 1 khi lọc
+        displayProducts();
+    }
+
+    function resetFilter() {
+        document.getElementById('filterKeyword').value = "";
+        document.getElementById('filterMsCode').value = "";
+        document.getElementById('filterPriceRange').value = "";
+        document.getElementById('filterServer').value = "";
+        document.getElementById('filterClass').value = "";
+        document.getElementById('filterLevel').value = "";
+        document.getElementById('filterTtgt').value = "";
+        document.getElementById('sortBy').value = "";
+        filteredProducts = allProducts;
+        currentPage = 1;
+        displayProducts();
+    }
+
+    // Check authentication status
+    function checkAuth() {
+        const token = localStorage.getItem("token");
+        const authLink = document.getElementById("authLink");
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                authLink.innerHTML = `<a href="#" onclick="logout(); return false;">ĐĂNG XUẤT</a>`;
+            } catch (e) {
+                authLink.innerHTML = `<a href="login.html">ĐĂNG NHẬP</a>`;
+            }
+        }
+    }
+    
+    function logout() {
+        localStorage.removeItem("token");
+        window.location.reload();
+    }
+
+    window.onload = function() {
+        loadData();
+        checkAuth();
+    };
+</script>
+</body>
+</html>

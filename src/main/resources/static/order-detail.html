@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        body {
+            background: #f5f6f7;
+            font-family: Arial, sans-serif;
+        }
+
+        .wrap {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .price-box {
+            min-width: 250px;
+        }
+
+        .ms {
+            color: #888;
+            font-weight: bold;
+        }
+
+        .price {
+            font-size: 30px;
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .buy {
+            background: #1abc9c;
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            min-width: 300px;
+        }
+
+        .info-item {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .info-item span {
+            display: block;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .info-item strong {
+            color: #e74c3c;
+            font-size: 15px;
+        }
+
+        /* === NỔI BẬT === */
+        .highlight-box {
+            margin-top: 30px;
+            border-top: 2px dashed #ddd;
+            padding-top: 20px;
+        }
+
+        .highlight-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .highlight-list {
+            color: #e74c3c;
+            font-weight: bold;
+            line-height: 1.7;
+        }
+
+        /* ẢNH */
+        .images {
+            margin-top: 30px;
+        }
+
+        .images img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="wrap" id="content" style="display:none">
+
+    <div class="top">
+        <div class="price-box">
+            <div class="ms" id="msCode">#MS</div>
+            <div class="price" id="price">0đ</div>
+            <a id="buyBtn" class="buy" target="_blank">MUA NGAY</a>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <span>SERVER</span>
+                <strong id="server"></strong>
+            </div>
+            <div class="info-item">
+                <span>CLASS</span>
+                <strong id="className"></strong>
+            </div>
+            <div class="info-item">
+                <span>LEVEL</span>
+                <strong id="level"></strong>
+            </div>
+            <div class="info-item">
+                <span>TTGT</span>
+                <strong id="ttgt"></strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- NỔI BẬT -->
+    <div class="highlight-box" id="highlightBox">
+        <div class="highlight-title">NỔI BẬT</div>
+        <div class="highlight-list" id="highlight"></div>
+    </div>
+
+    <!-- ẢNH -->
+    <div class="images" id="images"></div>
+
+</div>
+
+<script>
+    const id = new URLSearchParams(location.search).get("id");
+
+    fetch(`/api/products/${id}`)
+        .then(res => res.json())
+        .then(p => {
+            document.getElementById("content").style.display = "block";
+
+            msCode.textContent = p.msCode;
+            price.textContent = Number(p.price).toLocaleString() + "đ";
+            server.textContent = p.server;
+            className.textContent = p.className;
+            level.textContent = p.level;
+            ttgt.textContent = p.ttgt;
+
+            buyBtn.href = "https://www.facebook.com/baonguyen.nguyenba";
+
+            /* ===== NỔI BẬT ===== */
+            if (p.highlightInfo && p.highlightInfo.trim() !== "") {
+                highlight.innerHTML = p.highlightInfo
+                    .split("\n")
+                    .map(x => "• " + x)
+                    .join("<br>");
+            } else {
+                highlightBox.style.display = "none";
+            }
+
+            /* ===== ẢNH ===== */
+            let imgs = [];
+            try {
+                imgs = JSON.parse(p.imgData);
+            } catch {
+                imgs = [p.imgData];
+            }
+
+            images.innerHTML = imgs.map(i => `<img src="${i}">`).join("");
+        });
+</script>
+
+</body>
+</html>
