@@ -63,6 +63,16 @@
 
 ---
 
+## ⚠️ QUAN TRỌNG: Java Version
+
+**Project này đã được cấu hình để dùng Java 17** (thay vì Java 21) để tương thích với hầu hết các platform.
+
+Nếu bạn gặp lỗi `release version 21 not supported`, hãy đảm bảo:
+- `pom.xml` có `<java.version>17</java.version>`
+- Platform hỗ trợ Java 17
+
+---
+
 ## 📋 Chuẩn bị trước khi deploy
 
 ### 1. Tạo file `.gitignore` (nếu chưa có)
@@ -176,7 +186,8 @@ server.port=${PORT:8080}
 **App không start:**
 - Xem logs trên platform
 - Kiểm tra port configuration
-- Kiểm tra Java version (cần Java 21)
+- Kiểm tra Java version (cần Java 17)
+- Đảm bảo `pom.xml` có `<java.version>17</java.version>`
 
 **404 Not Found:**
 - Kiểm tra static files path
