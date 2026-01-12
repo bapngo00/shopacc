@@ -20,8 +20,11 @@ public class Product {
 
     private String ttgt; // Trạng thái giao dịch (VD: Không, Có)
 
+    @Column(name = "logo_image", columnDefinition = "LONGTEXT", nullable = true)
+    private String logoImage; // Ảnh logo (chỉ 1 ảnh) - hiển thị ngoài danh sách
+
     @Column(columnDefinition = "LONGTEXT")
-    private String imgData; // Lưu JSON array: ["img1", "img2", ...] hoặc single image string
+    private String imgData; // Lưu JSON array: ["img1", "img2", ...] - ảnh chi tiết (nhiều ảnh)
 
     private String facebookLink; // Link Facebook để liên hệ mua hàng
 
@@ -55,6 +58,9 @@ public class Product {
 
     public String getTtgt() { return ttgt; }
     public void setTtgt(String ttgt) { this.ttgt = ttgt; }
+
+    public String getLogoImage() { return logoImage; }
+    public void setLogoImage(String logoImage) { this.logoImage = logoImage; }
 
     public String getImgData() { return imgData; }
     public void setImgData(String imgData) { this.imgData = imgData; }

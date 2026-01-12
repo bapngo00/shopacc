@@ -424,16 +424,30 @@
                     </div>
 
                     <div class="form-group" style="grid-column: 1 / -1;">
-                        <label>Ảnh sản phẩm (Ảnh đầu tiên sẽ là ảnh logo ngoài)</label>
-                        <div class="image-upload" onclick="document.getElementById('imageInput').click()">
-                            <p>📷 Click để chọn nhiều ảnh hoặc kéo thả vào đây</p>
-                            <input type="file" id="imageInput" accept="image/*" multiple style="display:none">
+                        <label>🖼️ Ảnh Logo (Chỉ chọn 1 ảnh - hiển thị ngoài danh sách)</label>
+                        <div class="image-upload" onclick="document.getElementById('logoInput').click()" style="background: #f0fdfa; border-color: #1abc9c;">
+                            <p>📷 Click để chọn 1 ảnh logo</p>
+                            <input type="file" id="logoInput" accept="image/*" style="display:none">
                         </div>
-                        <div class="images-preview" id="imagesPreview"
+                        <div id="logoPreview" style="margin-top: 15px; display: none;">
+                            <div style="position: relative; display: inline-block; border: 3px solid #1abc9c; border-radius: 8px; padding: 5px; background: #f0fdfa;">
+                                <img id="logoPreviewImg" src="" style="width: 150px; height: 150px; object-fit: cover; border-radius: 4px; display: block;">
+                                <button type="button" onclick="removeLogo()" style="position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 18px; line-height: 1;">×</button>
+                                <div style="text-align: center; margin-top: 5px; font-size: 11px; color: #1abc9c; font-weight: bold;">🖼️ Logo</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>📸 Ảnh Chi Tiết (Có thể chọn nhiều ảnh - hiển thị trong trang chi tiết)</label>
+                        <div class="image-upload" onclick="document.getElementById('detailImagesInput').click()">
+                            <p>📷 Click để chọn nhiều ảnh hoặc kéo thả vào đây</p>
+                            <input type="file" id="detailImagesInput" accept="image/*" multiple style="display:none">
+                        </div>
+                        <div class="images-preview" id="detailImagesPreview"
                             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px;">
                         </div>
-                        <small style="color: #666; margin-top: 5px; display: block;">💡 Ảnh đầu tiên sẽ được dùng làm
-                            ảnh logo hiển thị ngoài danh sách</small>
+                        <small style="color: #666; margin-top: 5px; display: block;">💡 Có thể chọn nhiều ảnh để hiển thị trong trang chi tiết sản phẩm</small>
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -589,14 +603,42 @@
         /* ===== PRODUCT MANAGEMENT ===== */
         async function loadProducts() {
             try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    showAlert('alert-products', 'Chưa đăng nhập. Vui lòng đăng nhập lại.', 'error');
+                    setTimeout(() => location.href = '/login.html', 2000);
+                    return;
+                }
+
                 const res = await fetch('/api/admin/products', {
                     headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem("token")
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
                     }
                 });
+
+                // Kiểm tra response status
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showAlert('alert-products', 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
+                        setTimeout(() => location.href = '/login.html', 2000);
+                        return;
+                    }
+                    const text = await res.text();
+                    throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}`);
+                }
+
+                // Kiểm tra content-type
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await res.text();
+                    throw new Error('Response không phải JSON. Có thể do lỗi authentication hoặc server error.');
+                }
+
                 allProducts = await res.json();
                 renderProducts();
             } catch (err) {
+                console.error('Lỗi load products:', err);
                 showAlert('alert-products', 'Lỗi tải danh sách sản phẩm: ' + err.message, 'error');
             }
         }
@@ -611,26 +653,25 @@
             }
 
             products.forEach(p => {
-                // Get first image as logo
-                let firstImage = '';
-                try {
-                    if (p.imgData) {
+                // Lấy logo image (ưu tiên logoImage, nếu không có thì lấy ảnh đầu tiên từ imgData)
+                let logoImg = p.logoImage || '';
+                if (!logoImg && p.imgData) {
+                    try {
                         const images = JSON.parse(p.imgData);
                         if (Array.isArray(images) && images.length > 0) {
-                            firstImage = images[0];
+                            logoImg = images[0];
                         } else if (typeof images === 'string') {
-                            firstImage = images;
+                            logoImg = images;
                         }
+                    } catch (e) {
+                        logoImg = p.imgData || '';
                     }
-                } catch (e) {
-                    // Single image string
-                    firstImage = p.imgData || '';
                 }
 
                 tbody.innerHTML += `
             <tr>
                 <td>${p.msCode || 'N/A'}</td>
-                <td><img src="${firstImage}" class="table-img" alt="Product" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'80\\' height=\\'60\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'80\\' height=\\'60\\'/%3E%3Ctext x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dy=\\'.3em\\' fill=\\'%23999\\' font-size=\\'12\\'%3ENo Image%3C/text%3E%3C/svg%3E'"></td>
+                <td><img src="${logoImg}" class="table-img" alt="Product" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'80\\' height=\\'60\\'%3E%3Crect fill=\\'%23ddd\\' width=\\'80\\' height=\\'60\\'/%3E%3Ctext x=\\'50%25\\' y=\\'50%25\\' text-anchor=\\'middle\\' dy=\\'.3em\\' fill=\\'%23999\\' font-size=\\'12\\'%3ENo Image%3C/text%3E%3C/svg%3E'"></td>
                 <td>${p.title || ''}</td>
                 <td>${p.server || ''}</td>
                 <td>${p.className || ''}</td>
@@ -672,33 +713,41 @@
             document.getElementById('sold').value = p.sold ? 'true' : 'false';
             document.getElementById('highlightInfo').value = p.highlightInfo || '';
 
-            // Load images
-            productImages = [];
-            const previewContainer = document.getElementById('imagesPreview');
-            previewContainer.innerHTML = '';
+            // Load Logo
+            productLogo = p.logoImage || '';
+            if (productLogo) {
+                document.getElementById('logoPreviewImg').src = productLogo;
+                document.getElementById('logoPreview').style.display = 'block';
+            } else {
+                document.getElementById('logoPreview').style.display = 'none';
+            }
+
+            // Load Detail Images
+            productDetailImages = [];
+            const detailPreviewContainer = document.getElementById('detailImagesPreview');
+            detailPreviewContainer.innerHTML = '';
 
             if (p.imgData) {
                 try {
-                    // Try to parse as JSON array
                     const images = JSON.parse(p.imgData);
                     if (Array.isArray(images)) {
-                        productImages = images;
+                        productDetailImages = images;
                     } else {
-                        productImages = [p.imgData];
+                        productDetailImages = [p.imgData];
                     }
                 } catch (e) {
-                    // Single image string
-                    productImages = [p.imgData];
+                    productDetailImages = [p.imgData];
                 }
 
-                // Display images
-                productImages.forEach((imgSrc, index) => {
+                // Display detail images
+                productDetailImages.forEach((imgSrc, index) => {
                     const imgWrapper = document.createElement('div');
                     imgWrapper.style.position = 'relative';
-                    imgWrapper.style.border = index === 0 ? '3px solid #1abc9c' : '1px solid #ddd';
+                    imgWrapper.style.border = '1px solid #ddd';
                     imgWrapper.style.borderRadius = '4px';
                     imgWrapper.style.padding = '5px';
-                    imgWrapper.style.background = index === 0 ? '#f0fdfa' : '#fff';
+                    imgWrapper.style.background = '#fff';
+                    imgWrapper.dataset.imageIndex = index;
 
                     const img = document.createElement('img');
                     img.src = imgSrc;
@@ -708,12 +757,11 @@
                     img.style.borderRadius = '4px';
 
                     const label = document.createElement('div');
-                    label.textContent = index === 0 ? '🖼️ Logo' : `Ảnh ${index + 1}`;
+                    label.textContent = `Ảnh ${index + 1}`;
                     label.style.fontSize = '11px';
                     label.style.textAlign = 'center';
                     label.style.marginTop = '5px';
-                    label.style.color = index === 0 ? '#1abc9c' : '#666';
-                    label.style.fontWeight = index === 0 ? 'bold' : 'normal';
+                    label.style.color = '#666';
 
                     const removeBtn = document.createElement('button');
                     removeBtn.textContent = '×';
@@ -730,15 +778,16 @@
                     removeBtn.style.fontSize = '18px';
                     removeBtn.style.lineHeight = '1';
                     removeBtn.onclick = function () {
-                        productImages.splice(index, 1);
+                        const idx = parseInt(imgWrapper.dataset.imageIndex);
+                        productDetailImages.splice(idx, 1);
                         imgWrapper.remove();
-                        updateImagePreviews();
+                        updateDetailImagePreviews();
                     };
 
                     imgWrapper.appendChild(removeBtn);
                     imgWrapper.appendChild(img);
                     imgWrapper.appendChild(label);
-                    previewContainer.appendChild(imgWrapper);
+                    detailPreviewContainer.appendChild(imgWrapper);
                 });
             }
 
@@ -764,50 +813,76 @@
 
         function resetProductForm() {
             editProductId = null;
-            productImages = [];
+            productLogo = '';
+            productDetailImages = [];
             document.getElementById('product-form').reset();
-            document.getElementById('imagesPreview').innerHTML = '';
+            document.getElementById('logoPreview').style.display = 'none';
+            document.getElementById('detailImagesPreview').innerHTML = '';
             document.getElementById('form-title').textContent = '➕ Thêm sản phẩm mới';
             document.getElementById('sold').value = 'false';
         }
 
-        // Multiple images preview
-        let productImages = []; // Array to store all images
+        // Logo và Detail Images
+        let productLogo = ''; // Logo image (chỉ 1 ảnh)
+        let productDetailImages = []; // Detail images (nhiều ảnh)
 
-        document.getElementById('imageInput').addEventListener('change', function (e) {
+        // Xử lý Logo Input (chỉ 1 ảnh)
+        document.getElementById('logoInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                productLogo = e.target.result;
+                const previewDiv = document.getElementById('logoPreview');
+                const previewImg = document.getElementById('logoPreviewImg');
+                previewImg.src = e.target.result;
+                previewDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function removeLogo() {
+            productLogo = '';
+            document.getElementById('logoPreview').style.display = 'none';
+            document.getElementById('logoInput').value = '';
+        }
+
+        // Xử lý Detail Images Input (nhiều ảnh)
+        document.getElementById('detailImagesInput').addEventListener('change', function (e) {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
 
-            productImages = [];
-            const previewContainer = document.getElementById('imagesPreview');
-            previewContainer.innerHTML = '';
-
-            files.forEach((file, index) => {
+            // Thêm ảnh mới vào mảng (không xóa ảnh cũ)
+            const previewContainer = document.getElementById('detailImagesPreview');
+            
+            files.forEach((file) => {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    productImages.push(e.target.result);
+                    const imageData = e.target.result;
+                    productDetailImages.push(imageData);
 
                     const imgWrapper = document.createElement('div');
                     imgWrapper.style.position = 'relative';
-                    imgWrapper.style.border = index === 0 ? '3px solid #1abc9c' : '1px solid #ddd';
+                    imgWrapper.style.border = '1px solid #ddd';
                     imgWrapper.style.borderRadius = '4px';
                     imgWrapper.style.padding = '5px';
-                    imgWrapper.style.background = index === 0 ? '#f0fdfa' : '#fff';
+                    imgWrapper.style.background = '#fff';
+                    imgWrapper.dataset.imageIndex = productDetailImages.length - 1;
 
                     const img = document.createElement('img');
-                    img.src = e.target.result;
+                    img.src = imageData;
                     img.style.width = '100%';
                     img.style.height = '120px';
                     img.style.objectFit = 'cover';
                     img.style.borderRadius = '4px';
 
                     const label = document.createElement('div');
-                    label.textContent = index === 0 ? '🖼️ Logo' : `Ảnh ${index + 1}`;
+                    label.textContent = `Ảnh ${productDetailImages.length}`;
                     label.style.fontSize = '11px';
                     label.style.textAlign = 'center';
                     label.style.marginTop = '5px';
-                    label.style.color = index === 0 ? '#1abc9c' : '#666';
-                    label.style.fontWeight = index === 0 ? 'bold' : 'normal';
+                    label.style.color = '#666';
 
                     const removeBtn = document.createElement('button');
                     removeBtn.textContent = '×';
@@ -824,9 +899,10 @@
                     removeBtn.style.fontSize = '18px';
                     removeBtn.style.lineHeight = '1';
                     removeBtn.onclick = function () {
-                        productImages.splice(index, 1);
+                        const index = parseInt(imgWrapper.dataset.imageIndex);
+                        productDetailImages.splice(index, 1);
                         imgWrapper.remove();
-                        updateImagePreviews();
+                        updateDetailImagePreviews();
                     };
 
                     imgWrapper.appendChild(removeBtn);
@@ -838,17 +914,14 @@
             });
         });
 
-        function updateImagePreviews() {
-            const previewContainer = document.getElementById('imagesPreview');
-            const wrappers = previewContainer.querySelectorAll('div');
+        function updateDetailImagePreviews() {
+            const previewContainer = document.getElementById('detailImagesPreview');
+            const wrappers = Array.from(previewContainer.querySelectorAll('div'));
             wrappers.forEach((wrapper, index) => {
-                wrapper.style.border = index === 0 ? '3px solid #1abc9c' : '1px solid #ddd';
-                wrapper.style.background = index === 0 ? '#f0fdfa' : '#fff';
+                wrapper.dataset.imageIndex = index;
                 const label = wrapper.querySelector('div:last-child');
                 if (label) {
-                    label.textContent = index === 0 ? '🖼️ Logo' : `Ảnh ${index + 1}`;
-                    label.style.color = index === 0 ? '#1abc9c' : '#666';
-                    label.style.fontWeight = index === 0 ? 'bold' : 'normal';
+                    label.textContent = `Ảnh ${index + 1}`;
                 }
             });
         }
@@ -857,38 +930,38 @@
         document.getElementById('product-form').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            // Get all images from preview
-            let imgDataArray = productImages.length > 0 ? productImages : [];
+            // Nếu đang edit và không có ảnh mới, giữ ảnh cũ
+            let logoToSave = productLogo;
+            let detailImagesToSave = productDetailImages.length > 0 ? productDetailImages : [];
 
-            // If editing and no new images, keep existing images
-            if (editProductId && imgDataArray.length === 0) {
+            if (editProductId) {
                 const existingProduct = allProducts.find(p => p.id === editProductId);
-                if (existingProduct && existingProduct.imgData) {
+                if (!logoToSave && existingProduct && existingProduct.logoImage) {
+                    logoToSave = existingProduct.logoImage;
+                }
+                if (detailImagesToSave.length === 0 && existingProduct && existingProduct.imgData) {
                     try {
-                        // Try to parse as JSON array, if fails use as single image
-                        imgDataArray = JSON.parse(existingProduct.imgData);
-                        if (!Array.isArray(imgDataArray)) {
-                            imgDataArray = [existingProduct.imgData];
+                        detailImagesToSave = JSON.parse(existingProduct.imgData);
+                        if (!Array.isArray(detailImagesToSave)) {
+                            detailImagesToSave = [existingProduct.imgData];
                         }
                     } catch (e) {
-                        imgDataArray = [existingProduct.imgData];
+                        detailImagesToSave = [existingProduct.imgData];
                     }
                 }
             }
 
-            await saveProduct(imgDataArray);
+            await saveProduct(logoToSave, detailImagesToSave);
         });
 
-        async function saveProduct(imgDataArray) {
+        async function saveProduct(logoImage, detailImagesArray) {
             // Mã số sẽ tự động tạo nếu để trống (null)
             const msCode = null;
 
-            // Convert array to JSON string, or use first image if single
+            // Convert detail images array to JSON string
             let imgData = '';
-            if (Array.isArray(imgDataArray) && imgDataArray.length > 0) {
-                imgData = JSON.stringify(imgDataArray);
-            } else if (typeof imgDataArray === 'string') {
-                imgData = imgDataArray;
+            if (Array.isArray(detailImagesArray) && detailImagesArray.length > 0) {
+                imgData = JSON.stringify(detailImagesArray);
             }
 
             const data = {
@@ -899,7 +972,8 @@
                 className: document.getElementById('className').value,
                 level: parseInt(document.getElementById('level').value),
                 ttgt: document.getElementById('ttgt').value || 'Không',
-                imgData: imgData,
+                logoImage: logoImage || null, // Logo image
+                imgData: imgData, // Detail images
                 highlightInfo: document.getElementById('highlightInfo').value.trim() || null,
                 sold: document.getElementById('sold').value === 'true'
             };

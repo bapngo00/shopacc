@@ -80,6 +80,9 @@ public class ProductController {
                     if (newProduct.getTtgt() != null) {
                         p.setTtgt(newProduct.getTtgt());
                     }
+                    if (newProduct.getLogoImage() != null) {
+                        p.setLogoImage(newProduct.getLogoImage());
+                    }
                     if (newProduct.getImgData() != null) {
                         p.setImgData(newProduct.getImgData());
                     }

@@ -514,26 +514,25 @@
                 }
 
                 container.innerHTML = related.map(p => {
-                    // Parse images từ imgData (lưu trong database dạng Base64)
-                    let firstImage = '';
-                    if (p.imgData) {
+                    // Lấy logo image (ưu tiên logoImage, nếu không có thì lấy ảnh đầu tiên từ imgData)
+                    let logoImg = p.logoImage || '';
+                    if (!logoImg && p.imgData) {
                         try {
                             const parsed = JSON.parse(p.imgData);
                             if (Array.isArray(parsed) && parsed.length > 0) {
-                                firstImage = parsed[0]; // Lấy ảnh đầu tiên
+                                logoImg = parsed[0];
                             } else if (typeof parsed === 'string') {
-                                firstImage = parsed;
+                                logoImg = parsed;
                             }
                         } catch (e) {
-                            // Nếu không parse được, coi như string đơn
-                            firstImage = p.imgData;
+                            logoImg = p.imgData || '';
                         }
                     }
 
                     return `
                     <div class="related-card" onclick="window.location.href='product-detail.html?id=${p.id}'">
                         <div class="related-card-thumb">
-                            <img src="${firstImage}" alt="${p.msCode || 'Product'}">
+                            <img src="${logoImg}" alt="${p.msCode || 'Product'}">
                             <span class="related-ms-tag">MS: ${p.msCode || 'N/A'}</span>
                         </div>
                         <div class="related-card-footer">${p.title || ''}</div>

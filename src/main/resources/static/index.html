@@ -228,26 +228,25 @@
         const currentItems = filteredProducts.slice(start, end);
 
         currentItems.forEach(p => {
-            // Parse images - get first image as logo
-            let firstImage = '';
-            try {
-                if (p.imgData) {
+            // Lấy logo image (ưu tiên logoImage, nếu không có thì lấy ảnh đầu tiên từ imgData)
+            let logoImg = p.logoImage || '';
+            if (!logoImg && p.imgData) {
+                try {
                     const images = JSON.parse(p.imgData);
                     if (Array.isArray(images) && images.length > 0) {
-                        firstImage = images[0];
+                        logoImg = images[0];
                     } else if (typeof images === 'string') {
-                        firstImage = images;
+                        logoImg = images;
                     }
+                } catch (e) {
+                    logoImg = p.imgData || '';
                 }
-            } catch (e) {
-                // Single image string
-                firstImage = p.imgData || '';
             }
             
             grid.innerHTML += `
             <div class="product-card">
                 <div class="card-thumb">
-                    <img src="${firstImage}" alt="${p.msCode || 'Product'}">
+                    <img src="${logoImg}" alt="${p.msCode || 'Product'}">
                     <span class="ms-tag">MS: ${p.msCode || 'N/A'}</span>
                 </div>
                 <div class="card-body">

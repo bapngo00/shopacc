@@ -43,15 +43,15 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/style.css",
-                                "/**/*.html",
-                                "/**/*.css",
-                                "/**/*.js",
-                                "/**/*.png",
-                                "/**/*.jpg",
-                                "/**/*.jpeg",
-                                "/**/*.gif",
-                                "/**/*.svg",
-                                "/**/*.ico"
+                                "/*.html",
+                                "/*.css",
+                                "/*.js",
+                                "/*.png",
+                                "/*.jpg",
+                                "/*.jpeg",
+                                "/*.gif",
+                                "/*.svg",
+                                "/*.ico"
                         ).permitAll()
 
                         // ADMIN
