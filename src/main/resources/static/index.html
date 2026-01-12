@@ -65,7 +65,7 @@
     </style>
 </head>
 <body>
-    <!-- Top Bar với Social Icons và Hotline -->
+    <!-- Top Bar với Social Icons và Zalo -->
     <div class="top-bar">
         <div class="container">
             <div class="social-icons">
@@ -80,17 +80,17 @@
                     </svg>
                 </a>
             </div>
-            <div class="hotline">Hotline: <a href="https://zalo.me/0377709859">0377709859</a> (8h-20h)</div>
+            <div class="hotline">Zalo: Nguyễn Bá Cường - <a href="https://zalo.me/0377709859">0377709859</a> (8h-20h)</div>
         </div>
     </div>
 
 <header class="main-header">
     <div class="container header-content">
-        <a href="index.html" class="logo">T1NSOSHOP</a>
+        <a href="/" class="logo">T1NSOSHOP</a>
         <nav class="main-nav">
             <ul>
-                <li><a href="index.html">TRANG CHỦ</a></li>
-                <li id="authLink"><a href="login.html">ĐĂNG NHẬP</a></li>
+                <li><a href="/">TRANG CHỦ</a></li>
+                <li id="authLink"><a href="/login">ĐĂNG NHẬP</a></li>
             </ul>
         </nav>
     </div>
@@ -132,14 +132,12 @@
                 <select id="filterServer">
                     <option value="">-- Không chọn --</option>
                     <option value="1">Server 1</option>
-                    <option value="2">Server 2</option>
-                    <option value="3">Server 3</option>
+                    <option value="2+3">Server 2+3</option>
                     <option value="4">Server 4</option>
                     <option value="5">Server 5</option>
                     <option value="6">Server 6</option>
                     <option value="7">Server 7</option>
                     <option value="8">Server 8</option>
-                    <option value="2+3">Server 2+3</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -193,11 +191,17 @@
     <div class="pagination" id="pagination"></div>
 </main>
 
+<!-- Modal xem ảnh full size -->
+<div id="imageModal" class="image-modal" onclick="closeImageModal()">
+    <span class="image-modal-close">&times;</span>
+    <img class="image-modal-content" id="modalImage">
+</div>
+
 <script>
     let allProducts = [];      // Danh sách gốc từ API
     let filteredProducts = []; // Danh sách sau khi lọc
     let currentPage = 1;
-    const itemsPerPage = 8;    // Số nick hiển thị mỗi trang
+    const itemsPerPage = 12;    // Số nick hiển thị mỗi trang
 
     async function loadData() {
         try {
@@ -206,6 +210,10 @@
             // Lọc bỏ sản phẩm đã bán (phòng trường hợp API trả về)
             allProducts = allProducts.filter(p => !p.sold);
             filteredProducts = allProducts; // Ban đầu chưa lọc gì cả
+            // Sắp xếp theo giá giảm dần khi load lần đầu
+            filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
+            // Set mặc định select box là "price-desc"
+            document.getElementById('sortBy').value = "price-desc";
             displayProducts();
         } catch (err) {
             console.error("Lỗi tải data:", err);
@@ -246,7 +254,7 @@
             grid.innerHTML += `
             <div class="product-card">
                 <div class="card-thumb">
-                    <img src="${logoImg}" alt="${p.msCode || 'Product'}">
+                    <img src="${logoImg}" alt="${p.msCode || 'Product'}" onclick="openImageModal('${logoImg}')">
                     <span class="ms-tag">MS: ${p.msCode || 'N/A'}</span>
                 </div>
                 <div class="card-body">
@@ -270,7 +278,7 @@
                     </div>
                     <div class="product-footer">
                         <div class="price-box">${Number(p.price || 0).toLocaleString()}₫</div>
-                        <button class="btn-detail" onclick="window.location.href='product-detail.html?id=${p.id}'">Chi tiết</button>
+                        <button class="btn-detail" onclick="window.location.href='/product-detail?id=${p.id}'">Chi tiết</button>
                     </div>
                 </div>
             </div>`;
@@ -371,8 +379,10 @@
         document.getElementById('filterClass').value = "";
         document.getElementById('filterLevel').value = "";
         document.getElementById('filterTtgt').value = "";
-        document.getElementById('sortBy').value = "";
+        document.getElementById('sortBy').value = "price-desc";
         filteredProducts = allProducts;
+        // Sắp xếp theo giá giảm dần khi reset
+        filteredProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
         currentPage = 1;
         displayProducts();
     }
@@ -386,7 +396,7 @@
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 authLink.innerHTML = `<a href="#" onclick="logout(); return false;">ĐĂNG XUẤT</a>`;
             } catch (e) {
-                authLink.innerHTML = `<a href="login.html">ĐĂNG NHẬP</a>`;
+                authLink.innerHTML = `<a href="/login">ĐĂNG NHẬP</a>`;
             }
         }
     }
@@ -396,10 +406,71 @@
         window.location.reload();
     }
 
+    // Modal xem ảnh full size
+    function openImageModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        modal.style.display = 'block';
+        modalImg.src = imageSrc;
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // Đóng modal khi click bên ngoài ảnh
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        if (event.target === modal && event.target !== modalImg) {
+            closeImageModal();
+        }
+    });
+
+    // Đóng modal bằng phím ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+
     window.onload = function() {
         loadData();
         checkAuth();
     };
 </script>
+
+<!-- Footer -->
+<footer class="main-footer">
+    <div class="footer-content">
+        <div class="footer-column about">
+            <h3>VỀ T1NSOSHOP</h3>
+            <p>Chuyên mua bán nick các game uy tín, chất lượng cao. Giao dịch an toàn, tin cậy, nhanh chóng. Giao dịch tự động 24/24.</p>
+        </div>
+        <div class="footer-column contact">
+            <h3>CHÚNG TÔI Ở ĐÂY</h3>
+            <p>Chúng tôi làm việc một cách chuyên nghiệp, uy tín, nhanh chóng và luôn đặt quyền lợi của bạn lên hàng đầu.</p>
+            <div class="footer-contact-item">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span>Zalo: Nguyễn Bá Cường - <a href="https://zalo.me/0377709859" style="color: #3498db; text-decoration: none;">0377709859</a> (8h-20h)</span>
+            </div>
+            <div class="footer-contact-item">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span>Facebook: <a href="https://www.facebook.com/baonguyen.nguyenba" target="_blank" style="color: #3498db; text-decoration: none;">Nguyễn Bá Bảo Nguyên</a></span>
+            </div>
+            <div class="footer-contact-item">
+                <svg fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span>8h-11h30 & 13h30-22h</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
 </body>
 </html>

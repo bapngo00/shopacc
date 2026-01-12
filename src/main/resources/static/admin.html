@@ -376,14 +376,12 @@
                             <select id="server">
                                 <option value="">-- Chọn Server --</option>
                                 <option value="1">Server 1</option>
-                                <option value="2">Server 2</option>
-                                <option value="3">Server 3</option>
+                                <option value="2+3">Server 2+3</option>
                                 <option value="4">Server 4</option>
                                 <option value="5">Server 5</option>
                                 <option value="6">Server 6</option>
                                 <option value="7">Server 7</option>
                                 <option value="8">Server 8</option>
-                                <option value="2+3">Server 2+3</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -439,15 +437,17 @@
                     </div>
 
                     <div class="form-group" style="grid-column: 1 / -1;">
-                        <label>📸 Ảnh Chi Tiết (Có thể chọn nhiều ảnh - hiển thị trong trang chi tiết)</label>
-                        <div class="image-upload" onclick="document.getElementById('detailImagesInput').click()">
-                            <p>📷 Click để chọn nhiều ảnh hoặc kéo thả vào đây</p>
-                            <input type="file" id="detailImagesInput" accept="image/*" multiple style="display:none">
+                        <label>📸 Ảnh Chi Tiết (Thêm từng ảnh một - hiển thị trong trang chi tiết)</label>
+                        <div id="imageUploadContainer">
+                            <div class="image-upload" id="currentImageUpload" onclick="document.getElementById('detailImagesInput').click()">
+                                <p>📷 Click để chọn ảnh 1</p>
+                                <input type="file" id="detailImagesInput" accept="image/*" style="display:none">
+                            </div>
                         </div>
                         <div class="images-preview" id="detailImagesPreview"
                             style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 15px;">
                         </div>
-                        <small style="color: #666; margin-top: 5px; display: block;">💡 Có thể chọn nhiều ảnh để hiển thị trong trang chi tiết sản phẩm</small>
+                        <small style="color: #666; margin-top: 5px; display: block;">💡 Thêm từng ảnh một, ảnh sẽ được sắp xếp theo thứ tự bạn thêm</small>
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -560,7 +560,7 @@
             const token = localStorage.getItem("token");
             if (!token) {
                 alert("Bạn chưa đăng nhập");
-                location.href = "/login.html";
+                location.href = "/login";
                 return;
             }
 
@@ -568,7 +568,7 @@
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 if (payload.role !== "ROLE_ADMIN") {
                     alert("Bạn không có quyền admin");
-                    location.href = "/index.html";
+                    location.href = "/";
                     return;
                 }
                 document.getElementById("username").textContent = "👤 " + payload.sub;
@@ -577,7 +577,7 @@
                 loadOrders();
             } catch (e) {
                 alert("Token không hợp lệ");
-                location.href = "/login.html";
+                location.href = "/login";
             }
         }
 
@@ -606,7 +606,7 @@
                 const token = localStorage.getItem("token");
                 if (!token) {
                     showAlert('alert-products', 'Chưa đăng nhập. Vui lòng đăng nhập lại.', 'error');
-                    setTimeout(() => location.href = '/login.html', 2000);
+                    setTimeout(() => location.href = '/login', 2000);
                     return;
                 }
 
@@ -621,7 +621,7 @@
                 if (!res.ok) {
                     if (res.status === 401 || res.status === 403) {
                         showAlert('alert-products', 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.', 'error');
-                        setTimeout(() => location.href = '/login.html', 2000);
+                        setTimeout(() => location.href = '/login', 2000);
                         return;
                     }
                     const text = await res.text();
@@ -782,6 +782,7 @@
                         productDetailImages.splice(idx, 1);
                         imgWrapper.remove();
                         updateDetailImagePreviews();
+                        updateImageUploadButtons();
                     };
 
                     imgWrapper.appendChild(removeBtn);
@@ -820,6 +821,7 @@
             document.getElementById('detailImagesPreview').innerHTML = '';
             document.getElementById('form-title').textContent = '➕ Thêm sản phẩm mới';
             document.getElementById('sold').value = 'false';
+            updateImageUploadButtons();
         }
 
         // Logo và Detail Images
@@ -848,71 +850,102 @@
             document.getElementById('logoInput').value = '';
         }
 
-        // Xử lý Detail Images Input (nhiều ảnh)
+        // Xử lý Detail Images Input (từng ảnh một)
         document.getElementById('detailImagesInput').addEventListener('change', function (e) {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
+            const file = e.target.files[0];
+            if (!file) return;
 
-            // Thêm ảnh mới vào mảng (không xóa ảnh cũ)
             const previewContainer = document.getElementById('detailImagesPreview');
+            const reader = new FileReader();
             
-            files.forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const imageData = e.target.result;
-                    productDetailImages.push(imageData);
+            reader.onload = function (e) {
+                const imageData = e.target.result;
+                const imageIndex = productDetailImages.length;
+                productDetailImages.push(imageData);
 
-                    const imgWrapper = document.createElement('div');
-                    imgWrapper.style.position = 'relative';
-                    imgWrapper.style.border = '1px solid #ddd';
-                    imgWrapper.style.borderRadius = '4px';
-                    imgWrapper.style.padding = '5px';
-                    imgWrapper.style.background = '#fff';
-                    imgWrapper.dataset.imageIndex = productDetailImages.length - 1;
+                // Tạo wrapper cho ảnh
+                const imgWrapper = document.createElement('div');
+                imgWrapper.style.position = 'relative';
+                imgWrapper.style.border = '1px solid #ddd';
+                imgWrapper.style.borderRadius = '4px';
+                imgWrapper.style.padding = '5px';
+                imgWrapper.style.background = '#fff';
+                imgWrapper.dataset.imageIndex = imageIndex;
 
-                    const img = document.createElement('img');
-                    img.src = imageData;
-                    img.style.width = '100%';
-                    img.style.height = '120px';
-                    img.style.objectFit = 'cover';
-                    img.style.borderRadius = '4px';
+                const img = document.createElement('img');
+                img.src = imageData;
+                img.style.width = '100%';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '4px';
 
-                    const label = document.createElement('div');
-                    label.textContent = `Ảnh ${productDetailImages.length}`;
-                    label.style.fontSize = '11px';
-                    label.style.textAlign = 'center';
-                    label.style.marginTop = '5px';
-                    label.style.color = '#666';
+                const label = document.createElement('div');
+                label.textContent = `Ảnh ${imageIndex + 1}`;
+                label.style.fontSize = '11px';
+                label.style.textAlign = 'center';
+                label.style.marginTop = '5px';
+                label.style.color = '#666';
 
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = '×';
-                    removeBtn.style.position = 'absolute';
-                    removeBtn.style.top = '5px';
-                    removeBtn.style.right = '5px';
-                    removeBtn.style.background = '#e74c3c';
-                    removeBtn.style.color = 'white';
-                    removeBtn.style.border = 'none';
-                    removeBtn.style.borderRadius = '50%';
-                    removeBtn.style.width = '24px';
-                    removeBtn.style.height = '24px';
-                    removeBtn.style.cursor = 'pointer';
-                    removeBtn.style.fontSize = '18px';
-                    removeBtn.style.lineHeight = '1';
-                    removeBtn.onclick = function () {
-                        const index = parseInt(imgWrapper.dataset.imageIndex);
-                        productDetailImages.splice(index, 1);
-                        imgWrapper.remove();
-                        updateDetailImagePreviews();
-                    };
-
-                    imgWrapper.appendChild(removeBtn);
-                    imgWrapper.appendChild(img);
-                    imgWrapper.appendChild(label);
-                    previewContainer.appendChild(imgWrapper);
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = '×';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '5px';
+                removeBtn.style.right = '5px';
+                removeBtn.style.background = '#e74c3c';
+                removeBtn.style.color = 'white';
+                removeBtn.style.border = 'none';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.width = '24px';
+                removeBtn.style.height = '24px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.fontSize = '18px';
+                removeBtn.style.lineHeight = '1';
+                removeBtn.onclick = function () {
+                    const index = parseInt(imgWrapper.dataset.imageIndex);
+                    productDetailImages.splice(index, 1);
+                    imgWrapper.remove();
+                    updateDetailImagePreviews();
+                    updateImageUploadButtons();
                 };
-                reader.readAsDataURL(file);
-            });
+
+                imgWrapper.appendChild(removeBtn);
+                imgWrapper.appendChild(img);
+                imgWrapper.appendChild(label);
+                previewContainer.appendChild(imgWrapper);
+
+                // Reset input và tạo input mới cho ảnh tiếp theo
+                e.target.value = '';
+                updateImageUploadButtons();
+            };
+            
+            reader.readAsDataURL(file);
         });
+
+        // Hàm cập nhật các nút upload ảnh
+        function updateImageUploadButtons() {
+            const container = document.getElementById('imageUploadContainer');
+            const currentCount = productDetailImages.length;
+            
+            // Xóa tất cả các nút upload cũ (trừ nút đầu tiên nếu chưa có ảnh nào)
+            const existingUploads = container.querySelectorAll('.image-upload');
+            existingUploads.forEach((upload, index) => {
+                if (index > 0 || currentCount > 0) {
+                    upload.remove();
+                }
+            });
+
+            // Tạo nút upload cho ảnh tiếp theo
+            const nextImageNumber = currentCount + 1;
+            const newUploadDiv = document.createElement('div');
+            newUploadDiv.className = 'image-upload';
+            newUploadDiv.id = 'currentImageUpload';
+            newUploadDiv.onclick = function() {
+                document.getElementById('detailImagesInput').click();
+            };
+            newUploadDiv.innerHTML = `<p>📷 Click để chọn ảnh ${nextImageNumber}</p>`;
+            
+            container.appendChild(newUploadDiv);
+        }
 
         function updateDetailImagePreviews() {
             const previewContainer = document.getElementById('detailImagesPreview');
@@ -1070,7 +1103,7 @@
 
                 tbody.innerHTML += `
                 <tr>
-                    <td><a href="order-detail.html?id=${o.id}" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">#${o.id}</a></td>
+                    <td><a href="/order-detail?id=${o.id}" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">#${o.id}</a></td>
                     <td>${o.product ? (o.product.title || 'N/A') : 'N/A'}</td>
                     <td>${o.customerName || 'N/A'}</td>
                     <td>${o.customerPhone || 'N/A'}</td>

@@ -353,12 +353,86 @@
         .related-btn-detail:hover {
             background: #16a085;
         }
+
+        /* Footer */
+        .main-footer {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 40px 0 30px;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .footer-column.about h3 {
+            color: #3498db;
+        }
+
+        .footer-column.contact h3 {
+            color: #f39c12;
+        }
+
+        .footer-column p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #bdc3c7;
+            margin-bottom: 15px;
+        }
+
+        .footer-column a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+
+        .footer-column a:hover {
+            color: #5dade2;
+            text-decoration: underline;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #3498db;
+            font-size: 14px;
+        }
+
+        .footer-contact-item svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- Top Bar với Social Icons và Hotline -->
+    <!-- Top Bar với Social Icons và Zalo -->
     <div class="top-bar">
         <div class="container">
             <div class="social-icons">
@@ -375,16 +449,16 @@
                     </svg>
                 </a>
             </div>
-            <div class="hotline">Hotline: <a href="https://zalo.me/0377709859"
+            <div class="hotline">Zalo: Nguyễn Bá Cường - <a href="https://zalo.me/0377709859"
                     style="color: #9ca3af; text-decoration: none;">0377709859</a> (8h-20h)</div>
         </div>
     </div>
 
     <div class="header">
         <div class="container">
-            <a href="index.html" class="logo">T1NSOSHOP</a>
+            <a href="/" class="logo">T1NSOSHOP</a>
             <div class="nav">
-                <a href="index.html">Trang chủ</a>
+                <a href="/">Trang chủ</a>
                 <a href="#" onclick="logout()">Đăng xuất</a>
             </div>
         </div>
@@ -530,7 +604,7 @@
                     }
 
                     return `
-                    <div class="related-card" onclick="window.location.href='product-detail.html?id=${p.id}'">
+                    <div class="related-card" onclick="window.location.href='/product-detail?id=${p.id}'">
                         <div class="related-card-thumb">
                             <img src="${logoImg}" alt="${p.msCode || 'Product'}">
                             <span class="related-ms-tag">MS: ${p.msCode || 'N/A'}</span>
@@ -556,7 +630,7 @@
                                 </div>
                             </div>
                             <div class="related-price-box">${Number(p.price || 0).toLocaleString()}₫</div>
-                            <button class="related-btn-detail" onclick="event.stopPropagation(); window.location.href='product-detail.html?id=${p.id}'">Chi tiết</button>
+                            <button class="related-btn-detail" onclick="event.stopPropagation(); window.location.href='/product-detail?id=${p.id}'">Chi tiết</button>
                         </div>
                     </div>
                 `;
@@ -568,9 +642,48 @@
 
         function logout() {
             localStorage.removeItem("token");
-            location.href = "index.html";
+            location.href = "/";
         }
     </script>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-column about">
+                <h3>VỀ T1NSOSHOP</h3>
+                <p>Chuyên mua bán nick các game uy tín, chất lượng cao. Giao dịch an toàn, tin cậy, nhanh chóng. Giao
+                    dịch tự động 24/24.</p>
+            </div>
+            <div class="footer-column contact">
+                <h3>CHÚNG TÔI Ở ĐÂY</h3>
+                <p>Chúng tôi làm việc một cách chuyên nghiệp, uy tín, nhanh chóng và luôn đặt quyền lợi của bạn lên hàng
+                    đầu.</p>
+                <div class="footer-contact-item">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                    <span>Zalo: Nguyễn Bá Cường - <a href="https://zalo.me/0377709859"
+                            style="color: #3498db; text-decoration: none;">0377709859</a> (8h-20h)</span>
+                </div>
+                <div class="footer-contact-item">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                    <span>Facebook: <a href="https://www.facebook.com/baonguyen.nguyenba" target="_blank"
+                            style="color: #3498db; text-decoration: none;">Nguyễn Bá Bảo Nguyên</a></span>
+                </div>
+                <div class="footer-contact-item">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                    <span>8h-11h30 & 13h30-22h</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
 </body>
 

@@ -30,11 +30,17 @@ public class SecurityConfig {
                         // PUBLIC
                         .requestMatchers(
                                 "/",
+                                "/index",
                                 "/index.html",
+                                "/login",
                                 "/login.html",
+                                "/register",
                                 "/register.html",
+                                "/admin",
                                 "/admin.html",
+                                "/product-detail",
                                 "/product-detail.html",
+                                "/order-detail",
                                 "/order-detail.html",
                                 "/api/products/**",
                                 "/api/orders/**",
